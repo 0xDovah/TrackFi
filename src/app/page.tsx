@@ -13,6 +13,7 @@ import Summary from '@/components/Summary';
 import TransactionList from '@/components/TransactionList';
 import SettingsPanel from '@/components/SettingsPanel';
 import SmartImport from '@/components/SmartImport';
+import SavingsRate from '@/components/SavingsRate';
 
 export default function Home() {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -382,6 +383,9 @@ export default function Home() {
           onMonthChange={setSelectedMonth}
           availableMonths={availableMonths}
         />
+
+        {/* Savings Rate */}
+        <SavingsRate transactions={transactions} />
 
         {/* Transaction List */}
         <TransactionList
