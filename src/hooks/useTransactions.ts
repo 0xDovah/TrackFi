@@ -154,6 +154,26 @@ export function useTransactions(householdId: string | undefined) {
     return { error: null };
   };
 
+  const bulkUpdateTransactions = async (ids: string[], updates: TransactionUpdate) => {
+    if (ids.length === 0) return { error: null };
+
+    const prev = transactions;
+    setTransactions(transactions.map(t =>
+      ids.includes(t.id) ? { ...t, ...updates, updated_at: new Date().toISOString() } : t
+    ));
+
+    const { error } = await supabase
+      .from('transactions')
+      .update(updates)
+      .in('id', ids);
+
+    if (error) {
+      setTransactions(prev);
+      return { error };
+    }
+    return { error: null };
+  };
+
   const importTransactions = async (txns: TransactionInsert[]) => {
     if (txns.length === 0) return { count: 0, error: null };
 
@@ -174,6 +194,7 @@ export function useTransactions(householdId: string | undefined) {
     loading,
     addTransaction,
     updateTransaction,
+    bulkUpdateTransactions,
     deleteTransaction,
     importTransactions,
     refetch: fetchTransactions,

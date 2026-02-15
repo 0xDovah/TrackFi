@@ -40,6 +40,7 @@ export default function Home() {
     loading: txnLoading,
     addTransaction,
     updateTransaction,
+    bulkUpdateTransactions,
     deleteTransaction,
     importTransactions,
   } = useTransactions(household?.id);
@@ -402,6 +403,7 @@ export default function Home() {
           categories={categories}
           selectedMonth={selectedMonth}
           onUpdate={handleUpdateSubmit}
+          onBulkUpdate={bulkUpdateTransactions}
           onDelete={handleDelete}
           onAddCategory={addCategory}
         />
