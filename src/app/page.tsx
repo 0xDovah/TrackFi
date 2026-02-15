@@ -14,6 +14,8 @@ import TransactionList from '@/components/TransactionList';
 import SettingsPanel from '@/components/SettingsPanel';
 import SmartImport from '@/components/SmartImport';
 import SavingsRate from '@/components/SavingsRate';
+import RecurringExpenses from '@/components/RecurringExpenses';
+import SpendingCharts from '@/components/SpendingCharts';
 
 export default function Home() {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -384,8 +386,14 @@ export default function Home() {
           availableMonths={availableMonths}
         />
 
+        {/* Spending Charts */}
+        <SpendingCharts transactions={transactions} selectedMonth={selectedMonth} />
+
         {/* Savings Rate */}
         <SavingsRate transactions={transactions} />
+
+        {/* Recurring Expenses */}
+        <RecurringExpenses transactions={transactions} />
 
         {/* Transaction List */}
         <TransactionList
