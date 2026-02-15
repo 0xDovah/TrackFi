@@ -275,6 +275,27 @@ create trigger enforce_membership_immutable_fields
   for each row execute function public.prevent_role_change();
 
 -------------------------------------------------------------
+-- BUDGETS policies
+-------------------------------------------------------------
+alter table public.budgets enable row level security;
+
+create policy "Members can view budgets"
+  on public.budgets for select
+  using (household_id = public.get_user_household_id());
+
+create policy "Members can insert budgets"
+  on public.budgets for insert
+  with check (household_id = public.get_user_household_id());
+
+create policy "Members can update budgets"
+  on public.budgets for update
+  using (household_id = public.get_user_household_id());
+
+create policy "Members can delete budgets"
+  on public.budgets for delete
+  using (household_id = public.get_user_household_id());
+
+-------------------------------------------------------------
 -- CATEGORIES policies
 -------------------------------------------------------------
 create policy "Members can view categories"

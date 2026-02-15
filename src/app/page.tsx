@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useHousehold } from '@/hooks/useHousehold';
 import { useTransactions } from '@/hooks/useTransactions';
+import { useBudgets } from '@/hooks/useBudgets';
 import type { ExpenseType, PaymentMethod } from '@/lib/types';
 import TransactionForm, { getDefaultFormData } from '@/components/TransactionForm';
 import type { FormData } from '@/components/TransactionForm';
@@ -39,6 +40,11 @@ export default function Home() {
     deleteTransaction,
     importTransactions,
   } = useTransactions(household?.id);
+  const {
+    budgets,
+    setBudget,
+    removeBudget,
+  } = useBudgets(household?.id);
 
   const [showSettings, setShowSettings] = useState(false);
   const [showSmartImport, setShowSmartImport] = useState(false);
@@ -330,6 +336,7 @@ export default function Home() {
             members={members}
             categories={categories}
             invites={invites}
+            budgets={budgets}
             currentUserId={user.id}
             onClose={() => setShowSettings(false)}
             onUpdateMemberName={updateMemberName}
@@ -339,6 +346,8 @@ export default function Home() {
             onRevokeInvite={revokeInvite}
             onUpdateInviteEmail={updateInviteEmail}
             onSendInvite={sendInvite}
+            onSetBudget={setBudget}
+            onRemoveBudget={removeBudget}
             onSignOut={handleSignOut}
           />
         )}
@@ -368,6 +377,7 @@ export default function Home() {
         <Summary
           transactions={transactions}
           members={members}
+          budgets={budgets}
           selectedMonth={selectedMonth}
           onMonthChange={setSelectedMonth}
           availableMonths={availableMonths}

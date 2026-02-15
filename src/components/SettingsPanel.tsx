@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { DbHouseholdMember, DbCategory, DbHousehold, DbInvite } from '@/lib/types';
+import type { DbHouseholdMember, DbCategory, DbHousehold, DbInvite, DbBudget } from '@/lib/types';
 import { formatCategory } from '@/lib/utils';
 
 type SettingsPanelProps = {
@@ -9,6 +9,7 @@ type SettingsPanelProps = {
   members: DbHouseholdMember[];
   categories: DbCategory[];
   invites: DbInvite[];
+  budgets: DbBudget[];
   currentUserId: string;
   onClose: () => void;
   onUpdateMemberName: (memberId: string, newName: string) => void;
@@ -18,6 +19,8 @@ type SettingsPanelProps = {
   onRevokeInvite: (inviteId: string) => void;
   onUpdateInviteEmail: (inviteId: string, email: string) => Promise<void>;
   onSendInvite: (inviteId: string) => Promise<void>;
+  onSetBudget: (category: string, amountLimit: number) => Promise<void>;
+  onRemoveBudget: (budgetId: string) => Promise<void>;
   onSignOut: () => void;
 };
 
@@ -26,6 +29,7 @@ export default function SettingsPanel({
   members,
   categories,
   invites,
+  budgets,
   currentUserId,
   onClose,
   onUpdateMemberName,
@@ -35,6 +39,8 @@ export default function SettingsPanel({
   onRevokeInvite,
   onUpdateInviteEmail,
   onSendInvite,
+  onSetBudget,
+  onRemoveBudget,
   onSignOut,
 }: SettingsPanelProps) {
   const [memberNames, setMemberNames] = useState<Record<string, string>>(
@@ -45,6 +51,9 @@ export default function SettingsPanel({
   const [inviteActionLoading, setInviteActionLoading] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [sentInvites, setSentInvites] = useState<Record<string, 'sent' | 'error'>>({});
+  const [budgetInputs, setBudgetInputs] = useState<Record<string, string>>(
+    Object.fromEntries(budgets.map(b => [b.category, String(b.amount_limit)]))
+  );
 
   const isOwner = members.some(m => m.user_id === currentUserId && m.role === 'owner');
 
@@ -322,6 +331,70 @@ export default function SettingsPanel({
           >
             Add
           </button>
+        </div>
+      </div>
+
+      {/* Budget Limits */}
+      <div className="mb-6">
+        <h3 className="text-sm font-medium text-gray-700 mb-2">Budget Limits (per month)</h3>
+        <p className="text-xs text-gray-400 mb-3">Set a monthly spending limit for each category. Leave empty for no limit.</p>
+        <div className="space-y-2">
+          {categories.map(cat => {
+            const existing = budgets.find(b => b.category === cat.name);
+            const inputVal = budgetInputs[cat.name] ?? '';
+            const hasChanged = existing
+              ? inputVal !== String(existing.amount_limit)
+              : inputVal !== '';
+
+            return (
+              <div key={cat.id} className="flex items-center gap-2">
+                <span className="text-sm text-gray-600 w-32 truncate" title={formatCategory(cat.name)}>
+                  {formatCategory(cat.name)}
+                </span>
+                <div className="flex items-center gap-1 flex-1">
+                  <span className="text-sm text-gray-400">&euro;</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={inputVal}
+                    onChange={(e) => setBudgetInputs({ ...budgetInputs, [cat.name]: e.target.value })}
+                    placeholder="No limit"
+                    className="w-28 px-2 py-1 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                {hasChanged && inputVal !== '' && (
+                  <button
+                    onClick={() => {
+                      const val = parseFloat(inputVal);
+                      if (val > 0) onSetBudget(cat.name, val);
+                    }}
+                    className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                  >
+                    Save
+                  </button>
+                )}
+                {hasChanged && inputVal === '' && existing && (
+                  <button
+                    onClick={() => onRemoveBudget(existing.id)}
+                    className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors"
+                  >
+                    Remove
+                  </button>
+                )}
+                {!hasChanged && existing && (
+                  <button
+                    onClick={() => {
+                      setBudgetInputs({ ...budgetInputs, [cat.name]: '' });
+                    }}
+                    className="px-2 py-1 text-xs bg-gray-100 text-gray-500 rounded hover:bg-gray-200 transition-colors"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

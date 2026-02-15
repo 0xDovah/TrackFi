@@ -75,6 +75,15 @@ export type DbCategory = {
   created_at: string;
 };
 
+export type DbBudget = {
+  id: string;
+  household_id: string;
+  category: string;
+  amount_limit: number;
+  created_at: string;
+  updated_at: string;
+};
+
 export type DbProfile = {
   id: string;
   email: string;

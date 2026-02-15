@@ -131,3 +131,24 @@ $$ language plpgsql;
 create trigger set_updated_at
   before update on public.transactions
   for each row execute function public.update_updated_at();
+
+-------------------------------------------------------------
+-- BUDGETS (monthly spending limits per category)
+-------------------------------------------------------------
+create table public.budgets (
+  id            uuid primary key default gen_random_uuid(),
+  household_id  uuid not null references public.households(id) on delete cascade,
+  category      text not null
+                check (char_length(category) between 1 and 50),
+  amount_limit  numeric(12,2) not null
+                check (amount_limit > 0 and amount_limit < 100000000),
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now(),
+  unique (household_id, category)
+);
+
+create index idx_budgets_household on public.budgets(household_id);
+
+create trigger set_budgets_updated_at
+  before update on public.budgets
+  for each row execute function public.update_updated_at();
