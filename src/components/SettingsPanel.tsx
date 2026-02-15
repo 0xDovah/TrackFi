@@ -17,6 +17,7 @@ type SettingsPanelProps = {
   onRegenerateInvite: (inviteId: string) => Promise<string>;
   onRevokeInvite: (inviteId: string) => void;
   onUpdateInviteEmail: (inviteId: string, email: string) => Promise<void>;
+  onSendInvite: (inviteId: string) => Promise<void>;
   onSignOut: () => void;
 };
 
@@ -33,6 +34,7 @@ export default function SettingsPanel({
   onRegenerateInvite,
   onRevokeInvite,
   onUpdateInviteEmail,
+  onSendInvite,
   onSignOut,
 }: SettingsPanelProps) {
   const [memberNames, setMemberNames] = useState<Record<string, string>>(
@@ -42,6 +44,7 @@ export default function SettingsPanel({
   const [editingEmail, setEditingEmail] = useState<Record<string, string>>({});
   const [inviteActionLoading, setInviteActionLoading] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [sentInvites, setSentInvites] = useState<Record<string, 'sent' | 'error'>>({});
 
   const isOwner = members.some(m => m.user_id === currentUserId && m.role === 'owner');
 
@@ -92,6 +95,17 @@ export default function SettingsPanel({
         return next;
       });
     } catch { /* handled upstream */ }
+    setInviteActionLoading(null);
+  };
+
+  const handleSendInvite = async (inviteId: string) => {
+    setInviteActionLoading(inviteId);
+    try {
+      await onSendInvite(inviteId);
+      setSentInvites(prev => ({ ...prev, [inviteId]: 'sent' }));
+    } catch {
+      setSentInvites(prev => ({ ...prev, [inviteId]: 'error' }));
+    }
     setInviteActionLoading(null);
   };
 
@@ -180,6 +194,27 @@ export default function SettingsPanel({
                     )}
                     {/* Actions */}
                     <div className="flex gap-2">
+                      {invite.invited_email && (
+                        <button
+                          onClick={() => handleSendInvite(invite.id)}
+                          disabled={inviteActionLoading === invite.id}
+                          className={`px-2 py-1 text-xs rounded transition-colors disabled:opacity-50 ${
+                            sentInvites[invite.id] === 'sent'
+                              ? 'bg-green-100 text-green-700'
+                              : sentInvites[invite.id] === 'error'
+                              ? 'bg-red-100 text-red-700'
+                              : 'bg-blue-600 text-white hover:bg-blue-700'
+                          }`}
+                        >
+                          {inviteActionLoading === invite.id
+                            ? 'Sending...'
+                            : sentInvites[invite.id] === 'sent'
+                            ? 'Sent!'
+                            : sentInvites[invite.id] === 'error'
+                            ? 'Failed - Retry'
+                            : 'Send Invite'}
+                        </button>
+                      )}
                       <button
                         onClick={() => handleRegenerate(invite.id)}
                         disabled={inviteActionLoading === invite.id}

@@ -203,6 +203,17 @@ export function useHousehold(userId: string | undefined) {
     if (error) setInvites(prev);
   };
 
+  const sendInvite = async (inviteId: string) => {
+    const res = await fetch('/api/send-invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inviteId }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to send invite');
+    return data;
+  };
+
   const updateInviteEmail = async (inviteId: string, email: string) => {
     const { error } = await supabase.rpc('update_invite_email', {
       invite_id: inviteId,
@@ -227,6 +238,7 @@ export function useHousehold(userId: string | undefined) {
     getMemberByName,
     regenerateInvite,
     revokeInvite,
+    sendInvite,
     updateInviteEmail,
     refetch: fetchAll,
   };

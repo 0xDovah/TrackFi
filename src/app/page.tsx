@@ -28,6 +28,7 @@ export default function Home() {
     getMemberByName,
     regenerateInvite,
     revokeInvite,
+    sendInvite,
     updateInviteEmail,
   } = useHousehold(user?.id);
   const {
@@ -337,6 +338,7 @@ export default function Home() {
             onRegenerateInvite={regenerateInvite}
             onRevokeInvite={revokeInvite}
             onUpdateInviteEmail={updateInviteEmail}
+            onSendInvite={sendInvite}
             onSignOut={handleSignOut}
           />
         )}

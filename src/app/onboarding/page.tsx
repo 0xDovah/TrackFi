@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { DEFAULT_CATEGORIES } from '@/lib/constants';
 import type { DbInvite } from '@/lib/types';
@@ -9,11 +9,23 @@ import type { DbInvite } from '@/lib/types';
 type Mode = 'choose' | 'create' | 'join';
 
 export default function OnboardingPage() {
-  const [mode, setMode] = useState<Mode>('choose');
+  return (
+    <Suspense>
+      <OnboardingContent />
+    </Suspense>
+  );
+}
+
+function OnboardingContent() {
+  const searchParams = useSearchParams();
+  const inviteParam = searchParams.get('invite') ?? '';
+  const modeParam = searchParams.get('mode');
+
+  const [mode, setMode] = useState<Mode>(modeParam === 'join' ? 'join' : 'choose');
   const [displayName, setDisplayName] = useState('');
   const [householdName, setHouseholdName] = useState('');
   const [seatCount, setSeatCount] = useState(2);
-  const [inviteCode, setInviteCode] = useState('');
+  const [inviteCode, setInviteCode] = useState(inviteParam);
   const [createdInvites, setCreatedInvites] = useState<DbInvite[]>([]);
   const [createdHouseholdId, setCreatedHouseholdId] = useState<string | null>(null);
   const [error, setError] = useState('');

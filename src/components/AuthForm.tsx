@@ -6,9 +6,10 @@ import { useRouter } from 'next/navigation';
 
 type AuthFormProps = {
   mode: 'login' | 'signup';
+  inviteCode?: string;
 };
 
-export default function AuthForm({ mode }: AuthFormProps) {
+export default function AuthForm({ mode, inviteCode }: AuthFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -41,7 +42,11 @@ export default function AuthForm({ mode }: AuthFormProps) {
         setLoading(false);
         return;
       }
-      router.push('/onboarding');
+      if (inviteCode) {
+        router.push(`/onboarding?invite=${encodeURIComponent(inviteCode)}&mode=join`);
+      } else {
+        router.push('/onboarding');
+      }
     } else {
       const { error } = await supabase.auth.signInWithPassword({
         email,
